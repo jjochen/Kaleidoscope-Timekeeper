@@ -59,6 +59,7 @@ class Timekeeper : public KaleidoscopePlugin {
  private:
   static Key eventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state);
   static void loopHook(bool is_post_clear);
+  static bool timeAvailable(void);
   static void processSyncMessage(void);
   static time_t requestSync();
   static void typeNumber(int number, uint8_t numberOfDigits);

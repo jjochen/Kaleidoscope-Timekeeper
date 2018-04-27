@@ -38,8 +38,9 @@ void Timekeeper::begin(void) {
   Kaleidoscope.useEventHandlerHook(eventHandlerHook);
   Kaleidoscope.useLoopHook(loopHook);
 
-  pinMode(13, OUTPUT); // ?
-  setSyncProvider(requestSync);  //set function to call when sync required
+  // time sync
+  setSyncProvider(requestSync);
+  setSyncInterval(300);
 }
 
 Key Timekeeper::eventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
@@ -83,6 +84,10 @@ void Timekeeper::loopHook(bool is_post_clear) {
 
 
 void Timekeeper::typeDate(void) {
+  if (!timeAvailable()) {
+    return;
+  }
+
   typeNumber(year(), 4);
   tapKey(Key_Minus);
   typeNumber(month(), 2);
@@ -91,17 +96,28 @@ void Timekeeper::typeDate(void) {
 }
 
 void Timekeeper::typeTime(void) {
+  if (!timeAvailable()) {
+    return;
+  }
+
   typeNumber(hour(), 2);
   tapKey(Key_Minus); // separator!!!
   typeNumber(minute(), 2);
 }
 
 void Timekeeper::typeDateAndTime(void) {
+  if (!timeAvailable()) {
+    return;
+  }
+
   typeDate();
   tapKey(Key_Minus); // separator!!!
   typeTime();
 }
 
+bool Timekeeper::timeAvailable(void) {
+  return timeStatus() != timeSet;
+}
 
 void Timekeeper::processSyncMessage(void) {
   unsigned long pctime;
@@ -109,12 +125,11 @@ void Timekeeper::processSyncMessage(void) {
 
   if (Serial.find(TIME_HEADER)) {
     pctime = Serial.parseInt();
-    if (pctime >= DEFAULT_TIME) { // check the integer is a valid time (greater than Jan 1 2013)
-      setTime(pctime); // Sync Arduino clock to the time received on the serial port
+    if (pctime >= DEFAULT_TIME) {
+      setTime(pctime);
     }
   }
 }
-
 
 time_t Timekeeper::requestSync(void) {
   Serial.write(TIME_REQUEST);
