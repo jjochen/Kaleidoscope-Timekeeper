@@ -26,9 +26,7 @@
 
 #include <Kaleidoscope.h>
 #include <Kaleidoscope-Ranges.h>
-#include <TimeLib.h> // todo: move to .cpp
-
-// ToDo: define range
+#include <TimeLib.h>
 
 
 #define Key_TimekeeperDate (Key){ .raw = kaleidoscope::TMK_DATE }
@@ -39,7 +37,7 @@
 namespace kaleidoscope {
 
 enum {
-  TMK_FIRST = kaleidoscope::ranges::SAFE_START,
+  TMK_FIRST = kaleidoscope::ranges::TMK_FIRST,
   TMK_DATE = TMK_FIRST,
   TMK_TIME,
   TMK_DATE_TIME,
