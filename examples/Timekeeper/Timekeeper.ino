@@ -51,8 +51,10 @@ KEYMAPS(
 
 // *INDENT-ON*
 
+
+KALEIDOSCOPE_INIT_PLUGINS(Timekeeper);
+
 void setup() {
-  Kaleidoscope.use(&Timekeeper);
   Kaleidoscope.setup();
 }
 

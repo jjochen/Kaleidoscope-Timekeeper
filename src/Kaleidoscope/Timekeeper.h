@@ -26,7 +26,6 @@
 
 #include <Kaleidoscope.h>
 #include <Kaleidoscope-Ranges.h>
-#include <TimeLib.h>
 
 
 #define Key_TimekeeperDate (Key){ .raw = kaleidoscope::TMK_DATE }
@@ -44,25 +43,15 @@ enum {
   TMK_LAST = TMK_DATE_TIME
 };
 
-class Timekeeper : public KaleidoscopePlugin {
+class Timekeeper : public kaleidoscope::Plugin {
  public:
-  Timekeeper(void);
-
-  void begin(void) final;
-
+  Timekeeper(void) {};
+  EventHandlerResult onSetup();
+  EventHandlerResult onKeyswitchEvent(Key &mapped_key, byte row, byte col, uint8_t key_state);
+  EventHandlerResult afterEachCycle();
   static void typeDate(void);
   static void typeTime(void);
   static void typeDateAndTime(void);
-
- private:
-  static Key eventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state);
-  static void loopHook(bool is_post_clear);
-  static bool timeAvailable(void);
-  static void processSyncMessage(void);
-  static time_t requestSync();
-  static void typeNumber(int number, uint8_t numberOfDigits);
-  static void typeDigit(uint8_t digit);
-  static void tapKey(Key key);
 };
 
 }

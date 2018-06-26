@@ -29,7 +29,7 @@ You're done!
 ## Adding the plugin to your sketch
 
 To activate the plugin, you need to include the header, tell Kaleidoscope to `use`
-the plugin, and place the `Key_Timekeeper` key on your keymap.
+the plugin, and place the `Key_Timekeeper` key on your key map.
 
 ### Setup operations in the firmware sketch (example):
 
@@ -37,10 +37,8 @@ the plugin, and place the `Key_Timekeeper` key on your keymap.
 #include <Kaleidoscope.h>
 #include <Kaleidoscope-Timekeeper.h>
 
-void setup (){
-  Kaleidoscope.use(&Timekeeper);
-  Kaleidoscope.setup();
-}
+
+KALEIDOSCOPE_INIT_PLUGINS(Timekeeper);
 ```
 
 ### Keys

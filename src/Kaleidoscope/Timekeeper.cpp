@@ -23,33 +23,43 @@
  */
 
 #include <Kaleidoscope-Timekeeper.h>
+#include <TimeLib.h>
 
 #define TIME_HEADER 'T' // Header tag for serial time sync message
 #define TIME_REQUEST 7  // ASCII bell character requests a time sync message 
 
 
 namespace kaleidoscope {
+namespace {
 
-Timekeeper::Timekeeper(void) {
+static bool timeAvailable(void);
+static void processSyncMessage(void);
+static time_t requestSync();
+static void typeNumber(int number, uint8_t numberOfDigits);
+static void typeDigit(uint8_t digit);
+static void tapKey(Key key);
 
-}
+} // namespace
+} // namespace kaleidoscope
 
-void Timekeeper::begin(void) {
-  Kaleidoscope.useEventHandlerHook(eventHandlerHook);
-  Kaleidoscope.useLoopHook(loopHook);
 
-  // time sync
+namespace kaleidoscope {
+
+/*** Hooks ***/
+EventHandlerResult Timekeeper::onSetup(void) {
   setSyncProvider(requestSync);
   setSyncInterval(300);
+
+  return EventHandlerResult::OK;
 }
 
-Key Timekeeper::eventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
+EventHandlerResult Timekeeper::onKeyswitchEvent(Key &mapped_key, byte row, byte col, uint8_t keyState) {
   if (mapped_key.raw < TMK_FIRST || mapped_key.raw > TMK_LAST) {
-    return mapped_key;
+    return EventHandlerResult::OK;
   }
 
-  if (!keyToggledOn(key_state)) {
-    return Key_NoKey;
+  if (!keyToggledOn(keyState)) {
+    return EventHandlerResult::EVENT_CONSUMED;
   }
 
   switch (mapped_key.raw) {
@@ -64,25 +74,20 @@ Key Timekeeper::eventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key
     break;
   }
 
-  return Key_NoKey;
+  return EventHandlerResult::EVENT_CONSUMED;
 }
 
-void Timekeeper::loopHook(bool is_post_clear) {
-  if (!is_post_clear)
-    return;
-  //
-  // if (!isActive())
-  //   return;
+EventHandlerResult Timekeeper::afterEachCycle() {
+//   if (!isActive())
+//     return EventHandlerResult::OK;
+//
+//   if (millis() >= end_time_)
+//     reset();
 
-
-  // todo
-  // if (millis() >= end_time_)
-  //   reset();
-
-  processSyncMessage();
+  return EventHandlerResult::OK;
 }
 
-
+/*** Timekeeper methods ***/
 void Timekeeper::typeDate(void) {
   if (!timeAvailable()) {
     return;
@@ -115,11 +120,14 @@ void Timekeeper::typeDateAndTime(void) {
   typeTime();
 }
 
-bool Timekeeper::timeAvailable(void) {
+
+namespace {
+
+bool timeAvailable(void) {
   return timeStatus() != timeSet;
 }
 
-void Timekeeper::processSyncMessage(void) {
+void processSyncMessage(void) {
   unsigned long pctime;
   const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
 
@@ -131,20 +139,20 @@ void Timekeeper::processSyncMessage(void) {
   }
 }
 
-time_t Timekeeper::requestSync(void) {
+time_t requestSync(void) {
   Serial.write(TIME_REQUEST);
   return 0; // the time will be sent later in response to serial mesg
 }
 
 
-void Timekeeper::typeNumber(int number, uint8_t numberOfDigits) {
+void typeNumber(int number, uint8_t numberOfDigits) {
   for (uint8_t i = numberOfDigits; i > 0; i--) {
     uint8_t digit = (number % 10 ^ i) / 10 ^ (i - 1);
     typeDigit(digit);
   }
 }
 
-void Timekeeper::typeDigit(uint8_t digit) {
+void typeDigit(uint8_t digit) {
   Key key = Key_NoKey;
   switch (digit) {
   case 0:
@@ -171,14 +179,14 @@ void Timekeeper::typeDigit(uint8_t digit) {
   tapKey(key);
 }
 
-void Timekeeper::tapKey(Key key) {
-  kaleidoscope::hid::pressKey(key);
-  kaleidoscope::hid::sendKeyboardReport();
-  kaleidoscope::hid::releaseKey(key);
-  kaleidoscope::hid::sendKeyboardReport();
+void tapKey(Key key) {
+  hid::pressKey(key);
+  hid::sendKeyboardReport();
+  hid::releaseKey(key);
+  hid::sendKeyboardReport();
 }
 
-
+} // namespace
 } // namespace kaleidoscope
 
 
